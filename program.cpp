@@ -2,12 +2,34 @@
 #include <string>
 #include "SDL/SDL.h"
 
+//const static width = 640;
+//const static height = 480;
 
 class SandGrain{
 	public:
 		int x;
 		int y;
 };
+
+void drawRect(SDL_Surface* screen){
+	// Creating surface to draw to 
+	SDL_Surface *s;	
+	s = SDL_CreateRGBSurface(0,640,480,32,0,0,0,0);
+	
+	// Creating rect that will be drawn	
+	SDL_Rect rect;
+	rect.x = 100;
+	rect.y = 100;
+	rect.w = 200;
+	rect.h = 100;
+	
+	// Drawing Rect to new surface s
+	SDL_FillRect(s,&rect,SDL_MapRGB(s->format, 0, 0, 100));
+	
+	// Blitting new surface to surf passed as parameter
+
+	SDL_BlitSurface(s,NULL,screen,NULL);
+}
 
 class AnimationApp{
 	private:	
@@ -31,15 +53,22 @@ class AnimationApp{
 		}
 		bool onInit(void){
 			if (SDL_Init(SDL_INIT_EVERYTHING) < 0){
-			return false;
+				return false;
 			}
-		screenSurface = SDL_SetVideoMode(640,480,32,SDL_HWSURFACE | SDL_DOUBLEBUF);
+
+			SDL_WM_SetCaption("Falling Sand","Falling Sand");
+			screenSurface = SDL_SetVideoMode(640,480,32,SDL_HWSURFACE | SDL_DOUBLEBUF);
+			//SDL_Renderer* screenRenderer = SDL_CreateRenderer()			
+	
+		
 			return true;			
 
 		}
 
 		void onLoop();		// Calculating game logic
-		void onRender();	// Displaying new state
+		void onRender(void){
+			//drawRect(screenSurface);
+		}
 		
 		bool runWindow(void){
 	
@@ -53,7 +82,7 @@ class AnimationApp{
 					onEvent(dummyEvent);
 				}
 				//onLoop();
-				//onRender();
+				onRender();
 			}
 		 	return 0;
 				
@@ -61,12 +90,6 @@ class AnimationApp{
 };
 
 
-void initSDLConfigs(void){
-		
-	SDL_Init(SDL_INIT_VIDEO);
-	SDL_WM_SetCaption("Falling Sand","Falling Sand");
-	
-}
 
 
 int main(void){
@@ -75,7 +98,6 @@ int main(void){
 	sg.y = 12;
 	AnimationApp sandApp;	
 
-	initSDLConfigs();
 	sandApp.runWindow();
 	
 
