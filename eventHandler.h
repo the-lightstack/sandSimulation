@@ -1,4 +1,3 @@
-#include <program.cpp>
 
 void AnimationApp::onEvent(SDL_Event* event){
 	printf("Caught event!\n");

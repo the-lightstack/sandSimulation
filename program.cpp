@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 #include "SDL/SDL.h"
-#include <eventHandler.h>
 
 
 class SandGrain{
@@ -13,23 +12,50 @@ class SandGrain{
 class AnimationApp{
 	private:	
 		bool _running = true;
+		SDL_Surface* screenSurface;
 	
 	public:	
-		bool onInit();
-		void onEvent(SDL_Event* Event); // Handling e.g mouse
+		void onEvent(SDL_Event event){
+			switch (event.type){
+				case SDL_QUIT:   
+				// Handling keydown events here
+				_running = false;   
+				SDL_Quit();
+				break;  
+
+				case SDL_MOUSEBUTTONDOWN:
+					printf("Clicked at (%d|%d)\n",event.button.x,event.button.y);
+					break;
+						
+			}   
+		}
+		bool onInit(void){
+			if (SDL_Init(SDL_INIT_EVERYTHING) < 0){
+			return false;
+			}
+		screenSurface = SDL_SetVideoMode(640,480,32,SDL_HWSURFACE | SDL_DOUBLEBUF);
+			return true;			
+
+		}
+
 		void onLoop();		// Calculating game logic
 		void onRender();	// Displaying new state
 		
-		void runWindow(void){
+		bool runWindow(void){
+	
+			if (onInit() == false){
+				return -1;
+			}
 			while (_running){
 				// Sending all events to handler
 				SDL_Event dummyEvent;
 				while (SDL_PollEvent(&dummyEvent)){
-					onEvent(&dummyEvent);
+					onEvent(dummyEvent);
 				}
-				onLoop();
-				onRender();
+				//onLoop();
+				//onRender();
 			}
+		 	return 0;
 				
 		}
 };
@@ -39,9 +65,7 @@ void initSDLConfigs(void){
 		
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_WM_SetCaption("Falling Sand","Falling Sand");
-	SDL_Surface* screen = SDL_SetVideoMode(640,480,0,0);
 	
-
 }
 
 
