@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include "SDL/SDL.h"
+#include "SDL2/SDL.h"
 
 //const static width = 640;
 //const static height = 480;
@@ -10,7 +10,7 @@ class SandGrain{
 		int x;
 		int y;
 };
-
+/*
 void drawRect(SDL_Surface* screen){
 	// Creating surface to draw to 
 	SDL_Surface *s;	
@@ -30,13 +30,21 @@ void drawRect(SDL_Surface* screen){
 
 	SDL_BlitSurface(s,NULL,screen,NULL);
 }
+*/
 
 class AnimationApp{
 	private:	
 		bool _running = true;
-		SDL_Surface* screenSurface;
-	
+
 	public:	
+		SDL_Surface* screenSurface;
+		SDL_Window* programWindow;
+		SDL_Renderer* programRenderer;
+
+
+		int width = 640;
+		int height = 480;
+
 		void onEvent(SDL_Event event){
 			switch (event.type){
 				case SDL_QUIT:   
@@ -51,15 +59,31 @@ class AnimationApp{
 						
 			}   
 		}
+		
+		void drawRect(){
+			/*
+			SDL_Rect rectangle;
+			
+			rectangle.x = 10;
+			rectangle.y = 10;
+			rectangle.w = 200;
+			rectangle.h = 100;
+			*/
+			
+			SDL_SetRenderDrawColor(programRenderer,0xff,0xff,0xff,0xff);
+			SDL_RenderClear(programRenderer);
+			SDL_RenderPresent( programRenderer );
+
+			//SDL_RenderFillRect(programRenderer,&rectangle);
+
+		}
+
 		bool onInit(void){
 			if (SDL_Init(SDL_INIT_EVERYTHING) < 0){
 				return false;
 			}
-
-			SDL_WM_SetCaption("Falling Sand","Falling Sand");
-			screenSurface = SDL_SetVideoMode(640,480,32,SDL_HWSURFACE | SDL_DOUBLEBUF);
-			//SDL_Renderer* screenRenderer = SDL_CreateRenderer()			
-	
+			programWindow = SDL_CreateWindow("Falling Sand",100,100,width,height,0);
+			programRenderer = SDL_CreateRenderer(programWindow,-1,0);			
 		
 			return true;			
 
@@ -67,7 +91,7 @@ class AnimationApp{
 
 		void onLoop();		// Calculating game logic
 		void onRender(void){
-			//drawRect(screenSurface);
+			drawRect();
 		}
 		
 		bool runWindow(void){
@@ -96,6 +120,7 @@ int main(void){
 	SandGrain sg;
 	sg.x = 10;
 	sg.y = 12;
+
 	AnimationApp sandApp;	
 
 	sandApp.runWindow();
