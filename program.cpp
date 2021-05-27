@@ -2,35 +2,7 @@
 #include <string>
 #include "SDL2/SDL.h"
 
-//const static width = 640;
-//const static height = 480;
 
-class SandGrain{
-	public:
-		int x;
-		int y;
-};
-/*
-void drawRect(SDL_Surface* screen){
-	// Creating surface to draw to 
-	SDL_Surface *s;	
-	s = SDL_CreateRGBSurface(0,640,480,32,0,0,0,0);
-	
-	// Creating rect that will be drawn	
-	SDL_Rect rect;
-	rect.x = 100;
-	rect.y = 100;
-	rect.w = 200;
-	rect.h = 100;
-	
-	// Drawing Rect to new surface s
-	SDL_FillRect(s,&rect,SDL_MapRGB(s->format, 0, 0, 100));
-	
-	// Blitting new surface to surf passed as parameter
-
-	SDL_BlitSurface(s,NULL,screen,NULL);
-}
-*/
 
 class AnimationApp{
 	private:	
@@ -42,8 +14,16 @@ class AnimationApp{
 		SDL_Renderer* programRenderer;
 
 
-		int width = 640;
-		int height = 480;
+		int width;
+		int height;
+		long *gameBoard;
+
+		AnimationApp(int gameWidth, int gameHeight, long* gameBoard_p){
+			width = gameWidth;
+			height = gameHeight;
+			gameBoard = gameBoard_p;
+			printf("gameboard: %d \n",&gameBoard);
+		}
 
 		void onEvent(SDL_Event event){
 			switch (event.type){
@@ -61,21 +41,21 @@ class AnimationApp{
 		}
 		
 		void drawRect(){
-			/*
 			SDL_Rect rectangle;
 			
 			rectangle.x = 10;
 			rectangle.y = 10;
 			rectangle.w = 200;
 			rectangle.h = 100;
-			*/
 			
-			SDL_SetRenderDrawColor(programRenderer,0xff,0xff,0xff,0xff);
+			// #1e118e	
+			SDL_SetRenderDrawColor(programRenderer,0x1e,0x11,0x8e,0xff);
 			SDL_RenderClear(programRenderer);
+			
+			SDL_SetRenderDrawColor(programRenderer,0xdf,0xdf,0x00,0xff);
+			SDL_RenderFillRect(programRenderer,&rectangle);
+
 			SDL_RenderPresent( programRenderer );
-
-			//SDL_RenderFillRect(programRenderer,&rectangle);
-
 		}
 
 		bool onInit(void){
@@ -113,17 +93,61 @@ class AnimationApp{
 		}
 };
 
+class Game{
+	private:
+		int horizontalRowsSize;
+		int verticalRowSize;
+		
+	public:
+		int windowWidth;
+		int windowHeight;
+		//AnimationApp sandApp;
+		int sandboxSize;
+		enum {EMPTY,SAND,ROCK};
+
+			
+		// Defining constructor
+		Game(int width,int height,int sandGrainSize){
+			windowWidth = width;
+			windowHeight = height;	
+			sandboxSize = sandGrainSize;
+			SDL_Color sandColor = {0xE6,0xBD,0x05,0xff};
+
+			// Creating game-board array
+			horizontalRowsSize = (int)windowWidth/sandboxSize;
+			verticalRowSize = (int)windowHeight/sandboxSize;
+			
+			//uint8_t gameBoard [verticalRowSize] [horizontalRowsSize];
+			int gameBoard [verticalRowSize] [horizontalRowsSize] = {}; // Zeroeing it 
+			
+			// Making bottom row ROCK 
+			for (int i = 0;i<horizontalRowsSize;i++){
+				gameBoard[verticalRowSize-1][i] = ROCK;
+			}
+
+			// Printing for Debugging :)
+			printf("Gameboard height:%d, width: %d\n",verticalRowSize,horizontalRowsSize);
+			for (int i = 0; i<horizontalRowsSize;i++){
+				printf("%d | ",gameBoard[verticalRowSize-1][i]);
+			}
+			long* gameBoardPointer;			
+			gameBoardPointer = &gameBoard[0];
+			AnimationApp sandApp = AnimationApp(windowWidth,windowHeight,gameBoardPointer);
+		
+
+		}
+		
+	};
+
 
 
 
 int main(void){
-	SandGrain sg;
-	sg.x = 10;
-	sg.y = 12;
 
-	AnimationApp sandApp;	
+	Game game = Game(640,480,5);
 
-	sandApp.runWindow();
+	// AnimationApp sandApp;	
+	// sandApp.runWindow();
 	
 
 	return 0;
