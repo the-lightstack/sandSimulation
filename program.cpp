@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdio.h>
 #include <string>
 #include "SDL2/SDL.h"
 
@@ -12,17 +13,52 @@ class AnimationApp{
 		SDL_Surface* screenSurface;
 		SDL_Window* programWindow;
 		SDL_Renderer* programRenderer;
-
+	
 
 		int width;
 		int height;
-		long *gameBoard;
+		int** gameBoard;
+		int gameVerticalRows;
+		int gameHorizontalRows;
+	
+		void testShit(int** gameB_p){
+			printf("Pointer 1: %d\n",*(*gameB_p));
+			gameB_p++;
+			printf("Pointer 2: %d\n",gameB_p[94][4]);
 
-		AnimationApp(int gameWidth, int gameHeight, long* gameBoard_p){
+		}
+		
+		void printGameBoard(){
+			for (int i = 0;i<gameVerticalRows;i++){
+				for (int j = 0;j<gameHorizontalRows;j++){
+					printf("%d ",gameBoard[i][j]);
+				}
+				printf("\n");
+			}
+			
+		}
+		/*
+		AnimationApp(int gameWidth, int gameHeight, int** gameBoard_p,int gameVertRows,int gameHorzRows){
 			width = gameWidth;
 			height = gameHeight;
 			gameBoard = gameBoard_p;
-			printf("gameboard: %d \n",&gameBoard);
+			gameVerticalRows = gameVertRows;
+			gameHorizontalRows = gameHorzRows;	
+
+			testShit(gameBoard);
+			printGameBoard();
+		}
+		*/
+		
+		void initialize(int gameWidth, int gameHeight, int** gameBoard_p,int gameVertRows,int gameHorzRows){
+			width = gameWidth;
+			height = gameHeight;
+			gameBoard = gameBoard_p;
+			gameVerticalRows = gameVertRows;
+			gameHorizontalRows = gameHorzRows;	
+
+
+
 		}
 
 		void onEvent(SDL_Event event){
@@ -69,7 +105,6 @@ class AnimationApp{
 
 		}
 
-		void onLoop();		// Calculating game logic
 		void onRender(void){
 			drawRect();
 		}
@@ -85,12 +120,28 @@ class AnimationApp{
 				while (SDL_PollEvent(&dummyEvent)){
 					onEvent(dummyEvent);
 				}
-				//onLoop();
 				onRender();
 			}
 		 	return 0;
 				
 		}
+
+		void loopTurn(){
+		// Does all the things if running is true else quits?			
+			if (_running){	
+				// Handling all events
+				SDL_Event dummyEvent;
+				while (SDL_PollEvent(&dummyEvent)){
+					onEvent(dummyEvent);
+				}
+				// Rendering entire screen 
+				onRender(); 
+		
+			}
+			
+		}
+
+
 };
 
 class Game{
@@ -105,7 +156,12 @@ class Game{
 		int sandboxSize;
 		enum {EMPTY,SAND,ROCK};
 
-			
+		int **gameBoard;			
+		
+		void updateGameStates(){};
+		AnimationApp sandApp;
+		
+
 		// Defining constructor
 		Game(int width,int height,int sandGrainSize){
 			windowWidth = width;
@@ -117,26 +173,36 @@ class Game{
 			horizontalRowsSize = (int)windowWidth/sandboxSize;
 			verticalRowSize = (int)windowHeight/sandboxSize;
 			
-			//uint8_t gameBoard [verticalRowSize] [horizontalRowsSize];
-			int gameBoard [verticalRowSize] [horizontalRowsSize] = {}; // Zeroeing it 
-			
+
+			// Creating 2D Game Board Array			
+			gameBoard = new int* [verticalRowSize];
+			for (int i = 0;i<verticalRowSize;i++){
+				gameBoard[i] = new int[horizontalRowsSize];
+			}
+		
+			printf("Game board 1: %d\n",gameBoard[0][2]);
 			// Making bottom row ROCK 
 			for (int i = 0;i<horizontalRowsSize;i++){
 				gameBoard[verticalRowSize-1][i] = ROCK;
 			}
 
 			// Printing for Debugging :)
-			printf("Gameboard height:%d, width: %d\n",verticalRowSize,horizontalRowsSize);
-			for (int i = 0; i<horizontalRowsSize;i++){
-				printf("%d | ",gameBoard[verticalRowSize-1][i]);
-			}
-			long* gameBoardPointer;			
-			gameBoardPointer = &gameBoard[0];
-			AnimationApp sandApp = AnimationApp(windowWidth,windowHeight,gameBoardPointer);
-		
-
+			printf("Gameboard height: %d, width: %d\n",verticalRowSize,horizontalRowsSize);
+			
+			// sandApp = AnimationApp(windowWidth,windowHeight,gameBoard,verticalRowSize,horizontalRowsSize);
+			
+			sandApp.initialize(windowWidth,windowHeight,gameBoard,verticalRowSize,horizontalRowsSize);
+	
 		}
+
+		void runGame(){
+			while (true){
+				// Changing positions of sand
+				updateGameStates();
+				sandApp.loopTurn();
 		
+			}
+		}
 	};
 
 
@@ -145,10 +211,7 @@ class Game{
 int main(void){
 
 	Game game = Game(640,480,5);
-
-	// AnimationApp sandApp;	
-	// sandApp.runWindow();
+	game.runGame();
 	
-
 	return 0;
 }
