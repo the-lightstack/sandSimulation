@@ -33,11 +33,15 @@ class AnimationApp{
 
 		// Defining placeholder for callback
 		std::function<void (int,int)> placeSandPiecePH;
+		std::function<void (int,int)> placeRockPiecePH;	 // PH = PlaceHolder
 	
 		SDL_Color sandColor;
 		SDL_Color emptyColor;
 		SDL_Color rockColor;
 	
+		bool leftMouseButtonDown = false;
+		bool rightMouseButtonDown = false;
+
 	
 		void printGameBoard(){
 			for (int i = 0;i<gameVerticalRows;i++){
@@ -51,6 +55,9 @@ class AnimationApp{
 		
 		void setPlaceSandCallback(std::function<void(int,int)> callbackFunc){
 			placeSandPiecePH = callbackFunc;
+		}
+		void setPlaceRockCallback(std::function<void(int,int)>callbackFunc){	
+			placeRockPiecePH = callbackFunc;	
 		}
 
 		bool onInit(void){
@@ -83,6 +90,7 @@ class AnimationApp{
 
 		}
 
+
 		void onEvent(SDL_Event event){
 			switch (event.type){
 				case SDL_QUIT:   
@@ -91,12 +99,30 @@ class AnimationApp{
 					SDL_Quit();
 					break;  
 			case SDL_MOUSEBUTTONDOWN:
-					if (event.button.state == SDL_PRESSED){
+					if (event.button.button == SDL_BUTTON_LEFT){
+						leftMouseButtonDown = true;
+						printf("Button down!\n");
+					}else if(event.button.button = SDL_BUTTON_RIGHT){
+						rightMouseButtonDown = true;
+					}
+					/*
+					if (event.button.button == SDL_BUTTON_LEFT){
 						printf("Clicked at (%d|%d)\n",event.button.x,event.button.y);
 						placeSandPiecePH(event.button.x,event.button.y);
+					}else if(event.button.button = SDL_BUTTON_RIGHT){
+						placeRockPiecePH(event.button.x,event.button.y);
 					}
+					*/
 					break;
-						
+	
+			case SDL_MOUSEBUTTONUP:
+					if (event.button.button == SDL_BUTTON_LEFT){
+						printf("Button is up!\n");
+						leftMouseButtonDown = false;
+					}else if(event.button.button = SDL_BUTTON_RIGHT){
+						rightMouseButtonDown = false;
+					}
+				break;			
 			}   
 		}
 		
@@ -121,9 +147,22 @@ class AnimationApp{
 			SDL_RenderPresent( programRenderer );
 		}
 		
+		void callDrawFunctions(){
+			if (leftMouseButtonDown){
+				int x,y;
+				SDL_GetMouseState(&x,&y);
+				printf("Clicked/Holding at (%d|%d)\n",x,y);
+				placeSandPiecePH(x,y);
+				
+			}else if(rightMouseButtonDown){
+				int x,y;
+				SDL_GetMouseState(&x,&y);
+				placeRockPiecePH(x,y);
+			}
+			
+		}
 
 		void onRender(void){
-			
 			// Looping through entire game-map-array			
 			for (int row = 0; row<gameVerticalRows;row++){
 				for (int col = 0;col<gameHorizontalRows;col++){
@@ -146,6 +185,7 @@ class AnimationApp{
 					
 				}
 			}
+			callDrawFunctions();
 			/*	
 			drawRect(0,0,100,sandColor);
 			drawRect(100,0,100,emptyColor);
@@ -274,6 +314,14 @@ class Game{
 				
 			gameBoard[gridY][gridX] = FieldTypes::SAND;
 		}
+		
+		void placeRockPiece(int x, int y){
+			int gridX = (int)x/sandboxSize;
+			int gridY = (int)y/sandboxSize;
+				
+			gameBoard[gridY][gridX] = FieldTypes::ROCK;
+		}
+		
 	
 		// Defining constructor
 		Game(int width,int height,int sandGrainSize){
@@ -320,6 +368,7 @@ class Game{
 			
 			sandApp.initialize(windowWidth,windowHeight,gameBoard,verticalRowSize,horizontalRowsSize,sandColor,emptyColor,rockColor,sandboxSize);
 			sandApp.setPlaceSandCallback([&](int x,int y){ placeSandPiece(x,y);});
+			sandApp.setPlaceRockCallback([&](int x,int y){ placeRockPiece(x,y);});
 		
 		}
 
