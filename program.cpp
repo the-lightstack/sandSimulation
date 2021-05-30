@@ -21,13 +21,11 @@ class AnimationApp{
 		int gameVerticalRows;
 		int gameHorizontalRows;
 	
-		void testShit(int** gameB_p){
-			printf("Pointer 1: %d\n",*(*gameB_p));
-			gameB_p++;
-			printf("Pointer 2: %d\n",gameB_p[94][4]);
-
-		}
-		
+		SDL_Color sandColor;
+		SDL_Color emptyColor;
+		SDL_Color rockColor;
+	
+	
 		void printGameBoard(){
 			for (int i = 0;i<gameVerticalRows;i++){
 				for (int j = 0;j<gameHorizontalRows;j++){
@@ -37,6 +35,7 @@ class AnimationApp{
 			}
 			
 		}
+
 		/*
 		AnimationApp(int gameWidth, int gameHeight, int** gameBoard_p,int gameVertRows,int gameHorzRows){
 			width = gameWidth;
@@ -49,15 +48,31 @@ class AnimationApp{
 			printGameBoard();
 		}
 		*/
+		bool onInit(void){
+			if (SDL_Init(SDL_INIT_EVERYTHING) < 0){
+				return false;
+			}
+			programWindow = SDL_CreateWindow("Falling Sand",100,100,width,height,0);
+			programRenderer = SDL_CreateRenderer(programWindow,-1,0);			
 		
-		void initialize(int gameWidth, int gameHeight, int** gameBoard_p,int gameVertRows,int gameHorzRows){
+			return true;			
+
+		}
+
+
+		
+		void initialize(int gameWidth, int gameHeight, int** gameBoard_p,int gameVertRows,int gameHorzRows,SDL_Color gameSandColor, SDL_Color gameEmptyColor,SDL_Color gameRockColor){
 			width = gameWidth;
 			height = gameHeight;
 			gameBoard = gameBoard_p;
 			gameVerticalRows = gameVertRows;
 			gameHorizontalRows = gameHorzRows;	
-
-
+	
+			sandColor = gameSandColor;	
+			emptyColor = gameEmptyColor;
+			rockColor = gameRockColor;
+			
+			onInit();
 
 		}
 
@@ -76,37 +91,34 @@ class AnimationApp{
 			}   
 		}
 		
-		void drawRect(){
+		void drawRect(int xPos,int yPos,int scale,SDL_Color color){
 			SDL_Rect rectangle;
 			
-			rectangle.x = 10;
-			rectangle.y = 10;
-			rectangle.w = 200;
-			rectangle.h = 100;
+			rectangle.x = xPos;
+			rectangle.y = yPos;
+			rectangle.w = scale;
+			rectangle.h = scale;
 			
-			// #1e118e	
-			SDL_SetRenderDrawColor(programRenderer,0x1e,0x11,0x8e,0xff);
-			SDL_RenderClear(programRenderer);
+			// 	Setting background color	
+			//	SDL_SetRenderDrawColor(programRenderer,0xdf,0xdf,0x00,0xff);
+			//	SDL_RenderClear(programRenderer);
 			
-			SDL_SetRenderDrawColor(programRenderer,0xdf,0xdf,0x00,0xff);
+			SDL_SetRenderDrawColor(programRenderer,color.r,color.g,color.b,color.a);
 			SDL_RenderFillRect(programRenderer,&rectangle);
 
+		}
+		
+		void showRender(){
 			SDL_RenderPresent( programRenderer );
 		}
-
-		bool onInit(void){
-			if (SDL_Init(SDL_INIT_EVERYTHING) < 0){
-				return false;
-			}
-			programWindow = SDL_CreateWindow("Falling Sand",100,100,width,height,0);
-			programRenderer = SDL_CreateRenderer(programWindow,-1,0);			
 		
-			return true;			
-
-		}
 
 		void onRender(void){
-			drawRect();
+			
+			drawRect(0,0,100,sandColor);
+			drawRect(100,0,100,emptyColor);
+			drawRect(200,0,100,rockColor);
+			showRender();
 		}
 		
 		bool runWindow(void){
@@ -125,6 +137,8 @@ class AnimationApp{
 		 	return 0;
 				
 		}
+		
+		void cleanSDL(){};
 
 		void loopTurn(){
 		// Does all the things if running is true else quits?			
@@ -137,6 +151,9 @@ class AnimationApp{
 				// Rendering entire screen 
 				onRender(); 
 		
+			}else{
+				cleanSDL();
+				exit(0);
 			}
 			
 		}
@@ -160,14 +177,21 @@ class Game{
 		
 		void updateGameStates(){};
 		AnimationApp sandApp;
-		
+
+		SDL_Color sandColor;
+		SDL_Color emptyColor;
+		SDL_Color rockColor;
+
 
 		// Defining constructor
 		Game(int width,int height,int sandGrainSize){
 			windowWidth = width;
 			windowHeight = height;	
 			sandboxSize = sandGrainSize;
-			SDL_Color sandColor = {0xE6,0xBD,0x05,0xff};
+	
+			sandColor = {0xE6,0xBD,0x05,0xff};
+			emptyColor = {0x44,0x24,0xdb,0xff};
+			rockColor = {0x54,0xab,0x99,0xff};
 
 			// Creating game-board array
 			horizontalRowsSize = (int)windowWidth/sandboxSize;
@@ -191,7 +215,7 @@ class Game{
 			
 			// sandApp = AnimationApp(windowWidth,windowHeight,gameBoard,verticalRowSize,horizontalRowsSize);
 			
-			sandApp.initialize(windowWidth,windowHeight,gameBoard,verticalRowSize,horizontalRowsSize);
+			sandApp.initialize(windowWidth,windowHeight,gameBoard,verticalRowSize,horizontalRowsSize,sandColor,emptyColor,rockColor);
 	
 		}
 
@@ -213,5 +237,7 @@ int main(void){
 	Game game = Game(640,480,5);
 	game.runGame();
 	
+	
+
 	return 0;
 }
