@@ -2,24 +2,37 @@
 #include <stdio.h>
 #include <string>
 #include "SDL2/SDL.h"
+#include <functional>
 
 
+class FieldTypes{
+	public:
+		const static int EMPTY = 0;	
+		const static int SAND = 1;	
+		const static int ROCK = 2;	
+		
+};
 
 class AnimationApp{
 	private:	
 		bool _running = true;
 
 	public:	
+		
 		SDL_Surface* screenSurface;
 		SDL_Window* programWindow;
 		SDL_Renderer* programRenderer;
-	
+			
 
 		int width;
 		int height;
 		int** gameBoard;
 		int gameVerticalRows;
 		int gameHorizontalRows;
+		int sandBoxScale;
+
+		// Defining placeholder for callback
+		std::function<void (int,int)> placeSandPiecePH;
 	
 		SDL_Color sandColor;
 		SDL_Color emptyColor;
@@ -35,19 +48,11 @@ class AnimationApp{
 			}
 			
 		}
-
-		/*
-		AnimationApp(int gameWidth, int gameHeight, int** gameBoard_p,int gameVertRows,int gameHorzRows){
-			width = gameWidth;
-			height = gameHeight;
-			gameBoard = gameBoard_p;
-			gameVerticalRows = gameVertRows;
-			gameHorizontalRows = gameHorzRows;	
-
-			testShit(gameBoard);
-			printGameBoard();
+		
+		void setPlaceSandCallback(std::function<void(int,int)> callbackFunc){
+			placeSandPiecePH = callbackFunc;
 		}
-		*/
+
 		bool onInit(void){
 			if (SDL_Init(SDL_INIT_EVERYTHING) < 0){
 				return false;
@@ -61,12 +66,14 @@ class AnimationApp{
 
 
 		
-		void initialize(int gameWidth, int gameHeight, int** gameBoard_p,int gameVertRows,int gameHorzRows,SDL_Color gameSandColor, SDL_Color gameEmptyColor,SDL_Color gameRockColor){
+		void initialize(int gameWidth, int gameHeight, int** gameBoard_p,int gameVertRows,int gameHorzRows,SDL_Color gameSandColor, SDL_Color gameEmptyColor,SDL_Color gameRockColor,int sandBoxSize){
 			width = gameWidth;
 			height = gameHeight;
 			gameBoard = gameBoard_p;
 			gameVerticalRows = gameVertRows;
 			gameHorizontalRows = gameHorzRows;	
+			
+			sandBoxScale = sandBoxSize;
 	
 			sandColor = gameSandColor;	
 			emptyColor = gameEmptyColor;
@@ -79,13 +86,15 @@ class AnimationApp{
 		void onEvent(SDL_Event event){
 			switch (event.type){
 				case SDL_QUIT:   
-				// Handling keydown events here
-				_running = false;   
-				SDL_Quit();
-				break;  
-
-				case SDL_MOUSEBUTTONDOWN:
-					printf("Clicked at (%d|%d)\n",event.button.x,event.button.y);
+					// Handling keydown events here
+					_running = false;   
+					SDL_Quit();
+					break;  
+			case SDL_MOUSEBUTTONDOWN:
+					if (event.button.state == SDL_PRESSED){
+						printf("Clicked at (%d|%d)\n",event.button.x,event.button.y);
+						placeSandPiecePH(event.button.x,event.button.y);
+					}
 					break;
 						
 			}   
@@ -115,9 +124,33 @@ class AnimationApp{
 
 		void onRender(void){
 			
+			// Looping through entire game-map-array			
+			for (int row = 0; row<gameVerticalRows;row++){
+				for (int col = 0;col<gameHorizontalRows;col++){
+					int xCoord = col*sandBoxScale;
+					int yCoord = row*sandBoxScale;
+					
+					switch (gameBoard[row][col]){
+						case FieldTypes::SAND:
+							drawRect(xCoord,yCoord,sandBoxScale,sandColor);
+							break;
+						case FieldTypes::EMPTY:
+							drawRect(xCoord,yCoord,sandBoxScale,emptyColor);
+							break;
+						case FieldTypes::ROCK:
+							drawRect(xCoord,yCoord,sandBoxScale,rockColor);
+							break;
+									
+					}	
+				
+					
+				}
+			}
+			/*	
 			drawRect(0,0,100,sandColor);
 			drawRect(100,0,100,emptyColor);
 			drawRect(200,0,100,rockColor);
+			*/
 			showRender();
 		}
 		
@@ -171,18 +204,77 @@ class Game{
 		int windowHeight;
 		//AnimationApp sandApp;
 		int sandboxSize;
-		enum {EMPTY,SAND,ROCK};
 
 		int **gameBoard;			
-		
-		void updateGameStates(){};
+		int **secondaryGameBoard;
+	
+		void copyBoard(int** src,int** dest){
+			for (int row = 0;row<verticalRowSize;row++){
+				for (int col = 0;col<horizontalRowsSize;col++){
+				dest[row][col] = src[row][col];
+				}
+			}
+		}
+
+		void updateGameStates(){
+			bool madeMove;
+			for (int row = 0;row<verticalRowSize;row++){
+				for (int col = 0;col<horizontalRowsSize;col++){
+					// looking into secondary gameBoard and then changing main gameBoard -> later copying mainGameBoard back into secondary Game board			
+					if (secondaryGameBoard[row][col] == FieldTypes::SAND){
+						madeMove = false;
+						// Checking if 1 down is out of bounds
+						if (row+1<verticalRowSize){
+							if (secondaryGameBoard[row+1][col] == FieldTypes::EMPTY){
+								gameBoard[row+1][col] = FieldTypes::SAND;
+								// Maybe make current pos empty
+								gameBoard[row][col] = FieldTypes::EMPTY;
+								madeMove = true;
+							}
+						}
+						// Chained if for error prevention
+						// check for not out of map and not moved yet
+						// Moving one down + one left
+						if (row+1<verticalRowSize && col-1>=0 && !madeMove){
+							if (secondaryGameBoard[row+1][col-1] == FieldTypes::EMPTY){
+								gameBoard[row+1][col-1] = FieldTypes::SAND;
+								gameBoard[row][col] = FieldTypes::EMPTY;
+								madeMove = true;
+
+							}
+						}
+
+						if (row+1<verticalRowSize && col+1>=0 && !madeMove){
+							if (secondaryGameBoard[row+1][col+1] == FieldTypes::EMPTY){
+								gameBoard[row+1][col+1] = FieldTypes::SAND;
+								gameBoard[row][col] = FieldTypes::EMPTY;
+								madeMove = true;
+
+							}
+						}
+					}				
+				}
+			}
+			// Copying new array back into old one
+			copyBoard(gameBoard,secondaryGameBoard);
+		}
+
 		AnimationApp sandApp;
 
 		SDL_Color sandColor;
 		SDL_Color emptyColor;
 		SDL_Color rockColor;
+		
+		// in milli seconds	
+		int updateSandPositionDelay = 30;
 
-
+		void placeSandPiece(int x,int y){
+			int gridX = (int)x/sandboxSize;
+			int gridY = (int)y/sandboxSize;
+				
+			gameBoard[gridY][gridX] = FieldTypes::SAND;
+		}
+	
 		// Defining constructor
 		Game(int width,int height,int sandGrainSize){
 			windowWidth = width;
@@ -203,41 +295,50 @@ class Game{
 			for (int i = 0;i<verticalRowSize;i++){
 				gameBoard[i] = new int[horizontalRowsSize];
 			}
+	
+			// Initializing secondary game Board
+			secondaryGameBoard = new int* [verticalRowSize];
+			for (int i = 0;i<verticalRowSize;i++){
+				secondaryGameBoard[i] = new int[horizontalRowsSize];
+			}
 		
 			printf("Game board 1: %d\n",gameBoard[0][2]);
 			// Making bottom row ROCK 
 			for (int i = 0;i<horizontalRowsSize;i++){
-				gameBoard[verticalRowSize-1][i] = ROCK;
+				gameBoard[verticalRowSize-2][i] = FieldTypes::ROCK;
 			}
-
+			gameBoard[64][40] = FieldTypes::SAND;
+			gameBoard[62][40] = FieldTypes::SAND;
+			
+			gameBoard[70][20] = FieldTypes::ROCK;
+		
+			copyBoard(gameBoard,secondaryGameBoard);
 			// Printing for Debugging :)
 			printf("Gameboard height: %d, width: %d\n",verticalRowSize,horizontalRowsSize);
 			
 			// sandApp = AnimationApp(windowWidth,windowHeight,gameBoard,verticalRowSize,horizontalRowsSize);
 			
-			sandApp.initialize(windowWidth,windowHeight,gameBoard,verticalRowSize,horizontalRowsSize,sandColor,emptyColor,rockColor);
-	
+			sandApp.initialize(windowWidth,windowHeight,gameBoard,verticalRowSize,horizontalRowsSize,sandColor,emptyColor,rockColor,sandboxSize);
+			sandApp.setPlaceSandCallback([&](int x,int y){ placeSandPiece(x,y);});
+		
 		}
 
 		void runGame(){
+			updateGameStates();
 			while (true){
 				// Changing positions of sand
 				updateGameStates();
 				sandApp.loopTurn();
+				SDL_Delay(updateSandPositionDelay);
 		
 			}
 		}
 	};
-
-
-
 
 int main(void){
 
 	Game game = Game(640,480,5);
 	game.runGame();
 	
-	
-
 	return 0;
 }
