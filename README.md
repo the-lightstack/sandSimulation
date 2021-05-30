@@ -9,3 +9,11 @@ cd sandSimulation
 make install
 ./sandAnimation
 ```
+
+## Controls
+
+| Key                 | Function             |
+|---------------------|----------------------|
+| Left-click          | place sand           |
+| Right-click         | place rock           |
+| Space + Right-click | place sand generator |
