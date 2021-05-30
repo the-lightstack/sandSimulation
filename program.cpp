@@ -13,6 +13,11 @@ class FieldTypes{
 		
 };
 
+struct Vector{
+	int x;
+	int y;
+};
+
 class AnimationApp{
 	private:	
 		bool _running = true;
@@ -30,6 +35,9 @@ class AnimationApp{
 		int gameVerticalRows;
 		int gameHorizontalRows;
 		int sandBoxScale;
+		
+		Vector generator {(int)width/2,(int)height/5};
+		bool generatorOn = false;
 
 		// Defining placeholder for callback
 		std::function<void (int,int)> placeSandPiecePH;
@@ -41,6 +49,7 @@ class AnimationApp{
 	
 		bool leftMouseButtonDown = false;
 		bool rightMouseButtonDown = false;
+		bool spaceIsPressed = false;
 
 	
 		void printGameBoard(){
@@ -102,7 +111,16 @@ class AnimationApp{
 					if (event.button.button == SDL_BUTTON_LEFT){
 						leftMouseButtonDown = true;
 					}else if(event.button.button = SDL_BUTTON_RIGHT){
-						rightMouseButtonDown = true;
+						if (spaceIsPressed){
+							generatorOn = true;
+							generator.x = event.button.x;	
+							generator.y = event.button.y;
+						}
+						else{	
+							rightMouseButtonDown = true;
+						}
+
+
 					}
 					/*
 					if (event.button.button == SDL_BUTTON_LEFT){
@@ -120,6 +138,17 @@ class AnimationApp{
 						rightMouseButtonDown = false;
 					}
 				break;			
+			case SDL_KEYDOWN:
+				if (event.key.keysym.sym == SDLK_SPACE ){
+					spaceIsPressed = true;	
+				}
+				break;
+
+			case SDL_KEYUP:
+				if (event.key.keysym.sym == SDLK_SPACE ){
+					spaceIsPressed = false;	
+				}
+				break;
 			}   
 		}
 		
@@ -160,6 +189,7 @@ class AnimationApp{
 
 		void onRender(void){
 			// Looping through entire game-map-array			
+		
 			for (int row = 0; row<gameVerticalRows;row++){
 				for (int col = 0;col<gameHorizontalRows;col++){
 					int xCoord = col*sandBoxScale;
@@ -182,7 +212,11 @@ class AnimationApp{
 				}
 			}
 			callDrawFunctions();
-		
+			
+			if (generatorOn){
+				placeSandPiecePH(generator.x,generator.y);
+			}
+			
 			// placeSandPiecePH(200,4);
 			/*	
 			drawRect(0,0,100,sandColor);
@@ -304,7 +338,7 @@ class Game{
 		SDL_Color rockColor;
 		
 		// in milli seconds	
-		int updateSandPositionDelay = 30;
+		int updateSandPositionDelay = 4;
 
 		void placeSandPiece(int x,int y){
 			int gridX = (int)x/sandboxSize;
