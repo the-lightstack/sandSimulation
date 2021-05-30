@@ -101,13 +101,11 @@ class AnimationApp{
 			case SDL_MOUSEBUTTONDOWN:
 					if (event.button.button == SDL_BUTTON_LEFT){
 						leftMouseButtonDown = true;
-						printf("Button down!\n");
 					}else if(event.button.button = SDL_BUTTON_RIGHT){
 						rightMouseButtonDown = true;
 					}
 					/*
 					if (event.button.button == SDL_BUTTON_LEFT){
-						printf("Clicked at (%d|%d)\n",event.button.x,event.button.y);
 						placeSandPiecePH(event.button.x,event.button.y);
 					}else if(event.button.button = SDL_BUTTON_RIGHT){
 						placeRockPiecePH(event.button.x,event.button.y);
@@ -117,7 +115,6 @@ class AnimationApp{
 	
 			case SDL_MOUSEBUTTONUP:
 					if (event.button.button == SDL_BUTTON_LEFT){
-						printf("Button is up!\n");
 						leftMouseButtonDown = false;
 					}else if(event.button.button = SDL_BUTTON_RIGHT){
 						rightMouseButtonDown = false;
@@ -151,7 +148,6 @@ class AnimationApp{
 			if (leftMouseButtonDown){
 				int x,y;
 				SDL_GetMouseState(&x,&y);
-				printf("Clicked/Holding at (%d|%d)\n",x,y);
 				placeSandPiecePH(x,y);
 				
 			}else if(rightMouseButtonDown){
@@ -186,6 +182,8 @@ class AnimationApp{
 				}
 			}
 			callDrawFunctions();
+		
+			// placeSandPiecePH(200,4);
 			/*	
 			drawRect(0,0,100,sandColor);
 			drawRect(100,0,100,emptyColor);
@@ -355,10 +353,10 @@ class Game{
 			for (int i = 0;i<horizontalRowsSize;i++){
 				gameBoard[verticalRowSize-2][i] = FieldTypes::ROCK;
 			}
-			gameBoard[64][40] = FieldTypes::SAND;
-			gameBoard[62][40] = FieldTypes::SAND;
+			// gameBoard[64][40] = FieldTypes::SAND;
+			// gameBoard[62][40] = FieldTypes::SAND;
 			
-			gameBoard[70][20] = FieldTypes::ROCK;
+			// gameBoard[70][20] = FieldTypes::ROCK;
 		
 			copyBoard(gameBoard,secondaryGameBoard);
 			// Printing for Debugging :)
