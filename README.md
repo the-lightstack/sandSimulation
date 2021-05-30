@@ -9,3 +9,4 @@ cd sandSimulation
 make install
 ./sandAnimation
 ```
+![imageOfProject](./sandLandProjectImage.jpg)
