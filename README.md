@@ -11,7 +11,7 @@ If you want to build it type the following commands in your terminal
 
 ## Easy Way w/ piping into bash
 ```
-curl https://github.com/the-lightstack/sandSimulation/blob/master/easyBuild.sh |bash
+curl https://raw.githubusercontent.com/the-lightstack/sandSimulation/master/easyBuild.sh | bash 
 ```
 
 ## Running commands individually
@@ -33,4 +33,4 @@ make install
 =======
 
 ## Image
-![imageOfProject](./sandLandProjectImage.png)
+![imageOfProject](newSandAnimationImage.png)
