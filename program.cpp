@@ -308,7 +308,7 @@ class Game{
 						// check for not out of map and not moved yet
 						// Moving one down + one left
 						if (row+1<verticalRowSize && col-1>=0 && !madeMove){
-							if (secondaryGameBoard[row+1][col-1] == FieldTypes::EMPTY){
+							if (secondaryGameBoard[row+1][col-1] == FieldTypes::EMPTY && secondaryGameBoard[row][col-1] == FieldTypes::EMPTY){
 								gameBoard[row+1][col-1] = FieldTypes::SAND;
 								gameBoard[row][col] = FieldTypes::EMPTY;
 								madeMove = true;
@@ -317,7 +317,7 @@ class Game{
 						}
 
 						if (row+1<verticalRowSize && col+1>=0 && !madeMove){
-							if (secondaryGameBoard[row+1][col+1] == FieldTypes::EMPTY){
+							if (secondaryGameBoard[row+1][col+1] == FieldTypes::EMPTY && secondaryGameBoard[row][col+1] == FieldTypes::EMPTY){
 								gameBoard[row+1][col+1] = FieldTypes::SAND;
 								gameBoard[row][col] = FieldTypes::EMPTY;
 								madeMove = true;
