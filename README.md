@@ -30,7 +30,6 @@ make install
 | Left-click          | place sand           |
 | Right-click         | place rock           |
 | Space + Right-click | place sand generator |
-=======
 
 ## Image
 ![imageOfProject](newSandAnimationImage.png)
