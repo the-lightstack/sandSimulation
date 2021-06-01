@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string>
 #include "SDL2/SDL.h"
 #include <functional>
@@ -186,9 +187,14 @@ class AnimationApp{
 			}
 			
 		}
+		int genMutatedColor(int org){
+			int mutationStrength = 10;
+			return (unsigned char)(org+(rand()%mutationStrength)-((int)mutationStrength/2)); 
+		}
 
 		void onRender(void){
 			// Looping through entire game-map-array			
+			SDL_Color tempCol;
 		
 			for (int row = 0; row<gameVerticalRows;row++){
 				for (int col = 0;col<gameHorizontalRows;col++){
@@ -197,7 +203,14 @@ class AnimationApp{
 					
 					switch (gameBoard[row][col]){
 						case FieldTypes::SAND:
-							drawRect(xCoord,yCoord,sandBoxScale,sandColor);
+							// changing color a bit
+							srand(row*col);
+							// Define lambda
+							// auto generateColorMutation = [&](int org) { return org+(rand()%mutationStrength)-((int)mutationStrength/2); };
+
+							tempCol = {genMutatedColor(sandColor.r),genMutatedColor(sandColor.g),genMutatedColor(sandColor.b),0xff};
+
+							drawRect(xCoord,yCoord,sandBoxScale,tempCol);
 							break;
 						case FieldTypes::EMPTY:
 							drawRect(xCoord,yCoord,sandBoxScale,emptyColor);
